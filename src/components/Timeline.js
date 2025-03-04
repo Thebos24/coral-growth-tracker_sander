@@ -29,7 +29,20 @@ const Timeline = ({ albumName, onBack, photos, calculateDaysBetween, onDeletePho
           >
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h5" sx={{ flex: 1 }}>{albumName}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h5">{albumName}</Typography>
+            <Typography 
+              variant="subtitle2" 
+              sx={{ 
+                ml: 2,
+                color: 'text.secondary',
+                alignSelf: 'flex-end',
+                mb: 0.5
+              }}
+            >
+              V1.0
+            </Typography>
+          </Box>
         </Box>
         
         <Box sx={{ 
