@@ -70,7 +70,12 @@ const AlbumGrid = ({ albums, onAlbumClick, onDeleteAlbum, onCreateAlbum, onSignO
         borderBottom: 1,
         borderColor: 'divider'
       }}>
-        <Typography variant="h5">Coral Growth Tracker</Typography>
+        <Typography 
+          variant="h5" 
+          sx={{ color: 'primary.main' }}
+        >
+          Coral Growth Tracker
+        </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <UserProfile userProfile={userProfile} onSignOut={onSignOut} />
         </Box>
