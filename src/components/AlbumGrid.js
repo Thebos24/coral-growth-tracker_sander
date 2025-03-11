@@ -15,6 +15,9 @@ import UserProfile from './UserProfile';
 import PlaceholderCard from './PlaceholderCard';
 import DeleteConfirmDialog from './DeleteConfirmDialog';
 
+const convertDate = (date) =>
+    date && date.toDate ? date.toDate() : new Date(date);
+
 const getAlbumCover = (photos) => {
   if (photos.length > 0) {
     return photos[0].url;
@@ -109,7 +112,7 @@ const AlbumGrid = ({ albums, onAlbumClick, onDeleteAlbum, onCreateAlbum, onSignO
                 <Box>
                   <Typography variant="h6">{name}</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Last updated: {new Date(Math.max(...photos.map(p => new Date(p.date)))).toLocaleDateString()}
+                  Last updated: {new Date(Math.max(...photos.map(p => convertDate(p.date)))).toLocaleDateString()}
                   </Typography>
                 </Box>
                 <IconButton 
