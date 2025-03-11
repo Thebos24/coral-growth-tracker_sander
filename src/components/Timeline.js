@@ -6,7 +6,22 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PlaceholderCard from './PlaceholderCard';
 
-const Timeline = ({ albumName, onBack, photos, calculateDaysBetween, onDeletePhoto, onUploadPhotos, loading, onSignOut }) => {
+const convertDate = (date) =>
+    date && date.toDate ? date.toDate() : new Date(date);
+  
+
+const Timeline = ({ 
+  albumName,
+  photos,
+  calculateDaysBetween,
+  onDeletePhoto,
+  onUploadPhotos,
+  onBack,
+  onSignOut,
+  userProfile,
+  userId,
+  loading  // Add loading prop
+}) => {
   return (
     <Box>
       <Box sx={{ 
@@ -114,98 +129,106 @@ const Timeline = ({ albumName, onBack, photos, calculateDaysBetween, onDeletePho
               }}
             />
 
-            {photos.map((photo, index, array) => (
-              <Box
-                key={index}
-                sx={{
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  position: 'relative',
-                  mb: index < photos.length - 1 ? 0 : 0 // Remove margin bottom
-                }}
-              >
-                {/* Photo Card */}
-                <Card
-                  elevation={2}
+            {photos.map((photo, index, array) => {
+              console.log('Photo object:', {
+                url: photo.url,
+                type: typeof photo.url,
+                photo
+              });
+              
+              return (
+                <Box
+                  key={index}
                   sx={{
                     width: '100%',
-                    touchAction: 'pan-y',  // Enable vertical scrolling on touch devices
-                    WebkitOverflowScrolling: 'touch',  // Smooth scrolling on iOS
-                    maxWidth: 600,
-                    zIndex: 1,
-                    mb: 4 // Fixed space after card
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    position: 'relative',
+                    mb: index < photos.length - 1 ? 0 : 0 // Remove margin bottom
                   }}
                 >
-                  {/* Add delete button */}
-                  <Box sx={{ position: 'relative' }}>
-                    <IconButton
-                      sx={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        '&:hover': {
-                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        },
-                        zIndex: 2,
-                      }}
-                      onClick={() => onDeletePhoto(photo, index)}
-                    >
-                      <DeleteIcon sx={{ color: 'white' }} />
-                    </IconButton>
-                    <CardMedia
-                      component="img"
-                      image={photo.url}
-                      alt={`Photo from ${photo.date}`}
-                      sx={{
-                        height: { xs: 200, sm: 300 },  // Responsive height
-                        objectFit: 'contain',
-                        maxWidth: '100%'  // Ensure images don't overflow
-                      }}
-                    />
-                  </Box>
-                  <CardContent>
-                    <Typography variant="body2" color="textSecondary">
-                      Date: {new Date(photo.date).toLocaleDateString()}
-                    </Typography>
-                  </CardContent>
-                </Card>
-
-                {/* Days Count and Connection Line */}
-                {index < photos.length - 1 && (
-                  <Box 
+                  {/* Photo Card */}
+                  <Card
+                    elevation={2}
                     sx={{
-                      height: '80px', // Fixed height for connection space
                       width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      position: 'relative',
-                      mb: 4 // Fixed space after connection
+                      touchAction: 'pan-y',  // Enable vertical scrolling on touch devices
+                      WebkitOverflowScrolling: 'touch',  // Smooth scrolling on iOS
+                      maxWidth: 600,
+                      zIndex: 1,
+                      mb: 4 // Fixed space after card
                     }}
                   >
-                    <Typography
+                    {/* Add delete button */}
+                    <Box sx={{ position: 'relative' }}>
+                      <IconButton
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                          },
+                          zIndex: 2,
+                        }}
+                        onClick={() => onDeletePhoto(photo, index)}
+                      >
+                        <DeleteIcon sx={{ color: 'white' }} />
+                      </IconButton>
+                      <CardMedia
+                        component="img"
+                        image={photo.url}
+                        alt={`Photo from ${photo.uploadedAt}`}
+                        sx={{
+                          height: { xs: 200, sm: 300 },
+                          objectFit: 'contain',
+                          maxWidth: '100%'
+                        }}
+                      />
+                    </Box>
+                    <CardContent>
+                      <Typography variant="body2" color="textSecondary">
+                        Date: {convertDate(photo.date).toLocaleDateString()}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+
+                  {/* Days Count and Connection Line */}
+                  {index < photos.length - 1 && (
+                    <Box 
                       sx={{
-                        color: 'text.secondary',
-                        bgcolor: 'background.paper',
-                        px: 2,
-                        py: 0.5,
-                        borderRadius: 1,
-                        zIndex: 1,
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)'
+                        height: '80px', // Fixed height for connection space
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                        mb: 4 // Fixed space after connection
                       }}
                     >
-                      {calculateDaysBetween(photo.date, array[index + 1].date)} days
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            ))}
+                      <Typography
+                        sx={{
+                          color: 'text.secondary',
+                          bgcolor: 'background.paper',
+                          px: 2,
+                          py: 0.5,
+                          borderRadius: 1,
+                          zIndex: 1,
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)'
+                        }}
+                      >
+                        {calculateDaysBetween(photo.date, convertDate(array[index + 1].date))} days
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              );
+            })}
           </Box>
         )}
       </Box>

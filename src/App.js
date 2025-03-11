@@ -18,6 +18,10 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 
+// Helper to convert Firestore Timestamp (or ISO string) to JavaScript Date
+const convertDate = (date) =>
+  date && date.toDate ? date.toDate() : new Date(date);
+
 function App() {
   const [user, setUser] = useState(null);
   const [albums, setAlbums] = useState({});
@@ -49,7 +53,11 @@ function App() {
       setError(null);
       const userCredential = await FirebaseService.signIn(email, password);
       setUser(userCredential);
+      
+      console.log('Loading albums for user:', userCredential.uid);
       const savedAlbums = await FirebaseService.loadAlbums(userCredential.uid);
+      console.log('Loaded albums:', savedAlbums);
+      
       setAlbums(savedAlbums || {});
     } catch (error) {
       setError(error.message);
@@ -161,7 +169,13 @@ function App() {
   };
 
   const uploadPhotos = async (event) => {
-    if (!selectedAlbum) return;
+    if (!selectedAlbum || !user) {
+      console.error('Upload failed: Missing album or user', { 
+        hasAlbum: !!selectedAlbum, 
+        hasUser: !!user 
+      });
+      return;
+    }
     
     try {
       setLoading(true);
@@ -171,11 +185,12 @@ function App() {
       const newPhotos = await Promise.all(
         files.map(async (file) => {
           try {
-            const url = await FirebaseService.uploadImage(file);
+            // Get the full photoData object from uploadImage
+            const photoData = await FirebaseService.uploadImage(file, user.uid, selectedAlbum);
             const date = await getImageExifData(file);
             
             return { 
-              url,
+              url: photoData.url,  // Use the URL string from the object
               date,
               contentType: file.type,
               uploadedAt: new Date().toISOString()
@@ -186,18 +201,19 @@ function App() {
           }
         })
       );
+      
 
-      // Filter out failed uploads and sort by date
+      // Filter out failed uploads and sort by date using convertDate helper
       const validPhotos = newPhotos
         .filter(photo => photo !== null)
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
+        .sort((a, b) => convertDate(a.date) - convertDate(b.date));
       
       if (validPhotos.length > 0) {
         // Merge with existing photos and sort
         const updatedPhotos = [
           ...(albums[selectedAlbum] || []),
           ...validPhotos
-        ].sort((a, b) => new Date(a.date) - new Date(b.date));
+        ].sort((a, b) => convertDate(a.date) - convertDate(b.date));
 
         const updatedAlbums = {
           ...albums,
@@ -263,14 +279,14 @@ function App() {
   };
 
   const calculateDaysBetween = (date1, date2) => {
-    const d1 = new Date(date1);
-    const d2 = new Date(date2);
+    const d1 = convertDate(date1);
+    const d2 = convertDate(date2);
     const diffTime = Math.abs(d2 - d1);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
   const sortPhotosByDate = (photos) => {
-    return [...photos].sort((a, b) => new Date(a.date) - new Date(b.date));
+    return [...photos].sort((a, b) => convertDate(a.date) - convertDate(b.date));
   };
 
   const renderAlbumList = () => (
@@ -351,6 +367,8 @@ function App() {
             onBack={handleBackToAlbums}
             onSignOut={handleSignOut}
             userProfile={userProfile}
+            userId={user.uid}
+            loading={loading}
           />
         ) : (
           <AlbumGrid
